@@ -1,6 +1,6 @@
 # PicoT
 
-Temperature recorder.
+Raspberry Pi Pico temperature recorder with a rolling plot on E-Paper display.
 
 ## Status
 

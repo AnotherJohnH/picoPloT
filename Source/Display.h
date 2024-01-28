@@ -41,6 +41,11 @@ public:
       time_scale.setRange(-HIST_HOURS * 60, 0);
    }
 
+   unsigned getSamplePeriodSecs() const
+   {
+      return MINS_PER_PIXEL * 60;
+   }
+
    void setDay(unsigned dow_, unsigned dom_)
    {
       cur_dow = dow_;
@@ -55,32 +60,16 @@ public:
 
    void recordHumidity(unsigned value_)
    {
-      history_humidity.push(value_);
+      history_humd.push(value_);
    }
 
    void recordTemp(signed value_)
    {
-      history_temp.push(value_);
-
-      signed total = 0;
-      min_temp = 1000;
-      max_temp = -1000;
-
-      for(size_t i = 0; i < history_temp.size(); ++i)
-      {
-         if (history_temp[i] > max_temp)
-            max_temp = history_temp[i];
-
-         if (history_temp[i] < min_temp)
-            min_temp = history_temp[i];
-
-         total += history_temp[i];
-      }
-
-      avg_temp = total / history_temp.size();
+      history_temp.push((value_ * 10) / 256);
+      history_temp.stats(min_temp, max_temp, avg_temp);
    }
 
-   void draw()
+   void draw(bool partial)
    {
       char text[10];
 
@@ -88,13 +77,13 @@ public:
 
       printTemp(168,  2, &GUI::font_teletext18, history_temp[0], /* brief */ true);
 
-      printText(170, 22, &GUI::font_teletext12, "max");
+      printText(180, 22, &GUI::font_teletext12, "mx");
       printTemp(196, 24, &GUI::font_teletext12, max_temp, /* brief */ true);
 
-      printText(170, 36, &GUI::font_teletext12, "avg");
+      printText(180, 36, &GUI::font_teletext12, "av");
       printTemp(196, 38, &GUI::font_teletext12, avg_temp, /* brief */ true);
 
-      printText(170, 50, &GUI::font_teletext12, "min");
+      printText(180, 50, &GUI::font_teletext12, "mn");
       printTemp(196, 52, &GUI::font_teletext12, min_temp, /* brief */ true);
 
       snprintf(text, sizeof(text), "%02u:%02u", cur_hours, cur_mins);
@@ -117,9 +106,9 @@ public:
          canvas.drawPoint(BLACK, x, y - 1);
       }
 
-      snprintf(text, sizeof(text), "%2u.%u%%",
-               history_humidity[0] / 10, history_humidity[0] % 10);
-      printText(212, 70, &GUI::font_teletext12, text);
+      snprintf(text, sizeof(text), "%2u.%u", history_humd[0] / 10, history_humd[0] % 10);
+      printText(208, 70, &GUI::font_teletext12, text);
+      printText(244, 70, &GUI::font_teletext12, "%%");
 
       static const char* dow[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
       printText(180, 90, &GUI::font_teletext15, dow[cur_dow]);
@@ -127,7 +116,10 @@ public:
       snprintf(text, sizeof(text), "%2u", cur_dom);
       printText(219, 90, &GUI::font_teletext15, text);
 
-      canvas.refresh();
+      if (partial)
+         canvas.partialRefresh();
+      else
+         canvas.refresh();
    }
 
 private:
@@ -158,7 +150,7 @@ private:
          snprintf(s, 2, "%d", value % 10);
          s += 1;
 
-         *s++ = '\'';
+         *s++ = 0x7F;
          *s++ = 'C';
       }
 
@@ -250,8 +242,8 @@ private:
       }
    }
 
-   static const unsigned MINS_PER_PIXEL = 10;
    static const unsigned HIST_HOURS     = 24;
+   static const unsigned MINS_PER_PIXEL = 10;
    static const unsigned SAMPLES        = HIST_HOURS * 60 / MINS_PER_PIXEL;
 
    static const unsigned PLOT_X_LFT     = 20;
@@ -267,13 +259,14 @@ private:
    unsigned                  cur_hours{};
    unsigned                  cur_mins{};
    History<signed,SAMPLES>   history_temp;
-   History<unsigned,SAMPLES> history_humidity;
+   History<unsigned,SAMPLES> history_humd;
    signed                    min_temp{};
    signed                    max_temp{};
    signed                    avg_temp{};
 
    GUI::Canvas& canvas;
    Scale        temp_scale{PLOT_Y_BTM, PLOT_Y_TOP};
+   Scale        humd_scale{PLOT_Y_BTM, PLOT_Y_TOP};
    Scale        time_scale{PLOT_X_LFT, PLOT_X_RGT};
 };
 

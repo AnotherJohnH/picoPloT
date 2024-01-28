@@ -22,36 +22,51 @@
 
 // \brief picoT - main program
 
+#include <cstdio>
+
 #include "MTL/EPaper.h"
 #include "MTL/EPaperCanvas.h"
+#include "MTL/TempSens.h"
 #include "MTL/rp2040/Rtc.h"
 
 #include "Display.h"
 
+
+#define PRINTF if (0) printf
+
 int MTL_main()
 {
    MTL::EPaperCanvas<MTL::EPaper_213_V3, /* SWAP_XY */ true> epaper;
+   MTL::TempSens_MCP9808<MTL::I2C0_P21_P22>                  temp_sensor;
    MTL::Rtc                                                  rtc;
 
-   rtc.setDate(2024, 1, 23, 2);
-   rtc.setTime(19, 26, 0);
+   PRINTF("picoT\n");
+
+   temp_sensor.start();
+
+   rtc.setDate(2024, 1, 29, 1);
+   rtc.setTime(19, 40, 0);
    rtc.start();
 
    Display display(epaper);
 
-   signed temp = 103;
+   unsigned humidity = 532;
 
-   for(unsigned i = 0; i < 144; ++i)
+   while(true)
    {
       rtc.sample();
       display.setDay(rtc.getDOTW(), rtc.getDay());
       display.setTime(rtc.getHour(), rtc.getMinute());
+
+      signed temp = temp_sensor.read();
+      PRINTF("%d.%u deg C\n", temp / 256, ((temp * 10) / 256) % 10);
+
       display.recordTemp(temp);
-      temp++;
+      display.recordHumidity(humidity);
 
-      display.draw();
+      display.draw(/* partial */ false);
 
-      usleep(60000000);
+      usleep(display.getSamplePeriodSecs() * 1000000);
    }
 
    return 0;

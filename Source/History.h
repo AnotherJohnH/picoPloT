@@ -25,6 +25,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 
 template <typename TYPE,unsigned SIZE>
 class History
@@ -50,12 +51,41 @@ public:
                           : head + SIZE - tail;
    }
 
-   TYPE operator[](size_t index) const
+   TYPE at(size_t index) const
    {
       size_t first = head > 0 ? head - 1 : SIZE - 1;
               
       return first >= index ? buffer[first - index]
                             : buffer[first + SIZE - index];
+   }
+
+   TYPE operator[](size_t index) const
+   {
+      return at(index);
+   }
+
+   void stats(TYPE& min_, TYPE& max_, TYPE& avg_) const
+   {
+      TYPE min = std::numeric_limits<TYPE>::max();
+      TYPE max = std::numeric_limits<TYPE>::lowest();
+      TYPE sum = 0;
+
+      for(size_t i = 0; i < size(); ++i)
+      {
+         TYPE v = at(i);
+
+         if (v > max)
+            max = v;
+
+         if (v < min)
+            min = v;
+
+         sum += v;
+      }
+
+      min_ = min;
+      max_ = max;
+      avg_ = sum / size();
    }
 
 private:

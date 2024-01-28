@@ -29,22 +29,22 @@
 
 int main()
 {
-   ScaledFrame<2,16> window("picoT", 250, 122);
+   ScaledFrame<3,16> window("picoT", 250, 122);
    Display           display(window);
 
    display.setDay(2, 23);
    display.setTime(19, 48);
    display.recordHumidity(543);
 
-   signed temp = 98;
+   signed temp = 20 << 8;
 
-   for(unsigned i = 0; i < 50; ++i)
+   for(unsigned i = 0; i < 144; ++i)
    {
       display.recordTemp(temp);
-      temp++;
+      temp += 0x20;
    }
 
-   display.draw();
+   display.draw(/* partial */ false);
 
    return PLT::Event::eventLoop();
 }
