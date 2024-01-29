@@ -20,13 +20,13 @@
 #  SOFTWARE.
 #-------------------------------------------------------------------------------
 
-add_executable(picoT picoT_${PLT_TARGET}.cpp)
+add_executable(picoPloT picoPloT_${PLT_TARGET}.cpp)
 
-target_include_directories(picoT PRIVATE .)
+target_include_directories(picoPloT PRIVATE .)
 
 if(${PLT_TARGET} STREQUAL native)
-   target_link_libraries(picoT PRIVATE PLT STB GUI)
+   target_link_libraries(picoPloT PRIVATE PLT STB GUI)
 else()
-   target_link_libraries(picoT PRIVATE TNY MTL TNY GUI)
+   target_link_libraries(picoPloT PRIVATE TNY MTL TNY GUI)
 endif()
 

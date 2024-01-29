@@ -20,7 +20,7 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------
 
-// \brief picoT - main program
+// \brief picoPloT - main program
 
 #include <cstdio>
 
@@ -31,8 +31,8 @@
 
 #include "Display.h"
 
-
 #define PRINTF if (0) printf
+
 
 int MTL_main()
 {
@@ -40,7 +40,7 @@ int MTL_main()
    MTL::TempSens_MCP9808<MTL::I2C0_P21_P22>                  temp_sensor;
    MTL::Rtc                                                  rtc;
 
-   PRINTF("picoT\n");
+   PRINTF("picoPloT\n");
 
    temp_sensor.start();
 

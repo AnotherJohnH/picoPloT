@@ -20,7 +20,7 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------
 
-// \brief picoT - native simulation
+// \brief picoPloT - native simulation
 
 #include "ScaledFrame.h"
 #include "PLT/Event.h"
@@ -29,7 +29,7 @@
 
 int main()
 {
-   ScaledFrame<3,16> window("picoT", 250, 122);
+   ScaledFrame<3,16> window("picoPloT", 250, 122);
    Display           display(window);
 
    display.setDay(2, 23);

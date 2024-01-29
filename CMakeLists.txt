@@ -22,9 +22,9 @@
 
 cmake_minimum_required(VERSION 3.19.1)
 
-project(picoT
+project(picoPloT
         LANGUAGES CXX C ASM
-        VERSION 0.0.0)
+        VERSION 0.0.1)
 
 add_subdirectory(Platform)
 add_subdirectory(Source)
