@@ -16,6 +16,12 @@ Both Pico and native targets should build on MacOS or Linux.
 
 Working but incomplete and has some bugs.
 
+## Hardware information
+
+![prototype](docs/breadboard_v0.01.jpg)
+
+For more information on the circuit above see the [schematic](https://github.com/AnotherJohnH/picoPloT/blob/main/docs/schematic_v0.01.pdf)
+
 ## How to build
 
 ### Checkout
