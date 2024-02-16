@@ -33,20 +33,20 @@
 
 #define PRINTF if (0) printf
 
-extern "C" void IRQ_RTC() {}
+MTL::EPaperCanvas<MTL::EPaper_213_V3, /* SWAP_XY */ true> epaper;
+MTL::TempSens_MCP9808<MTL::I2C0_P21_P22>                  temp_sensor;
+MTL::Rtc                                                  rtc;
+
+extern "C" void IRQ_RTC() { rtc.irq(); }
 
 int MTL_main()
 {
-   MTL::EPaperCanvas<MTL::EPaper_213_V3, /* SWAP_XY */ true> epaper;
-   MTL::TempSens_MCP9808<MTL::I2C0_P21_P22>                  temp_sensor;
-   MTL::Rtc                                                  rtc;
-
    PRINTF("picoPloT\n");
 
    temp_sensor.start();
 
-   rtc.setDate(2024, 2, 16, 1);
-   rtc.setTime(10, 30, 0);
+   rtc.setDate(2024, 2, 16);
+   rtc.setTime(17, 30, 0, 5);
    rtc.start();
 
    Display display(epaper);
@@ -56,14 +56,8 @@ int MTL_main()
    while(true)
    {
       // Current time
-      rtc.sample();
       display.setDay(rtc.getDOTW(), rtc.getDay());
       display.setTime(rtc.getHour(), rtc.getMinute());
-
-      // Post an alarm for the next minute
-      unsigned next_minute = rtc.getMinute() + 1;
-      if (next_minute == 60) next_minute = 0;
-      rtc.setMinuteAlarm(next_minute);
 
       if (temp_cycle-- == 0)
       {
@@ -84,9 +78,8 @@ int MTL_main()
          display.draw(/* partial */ true);
       }
 
-      usleep(60 * 1000000);
-      // goto sleep
-      //__asm("wfi");
+      // sleep for a minute since the last RTC event
+      rtc.sleep(60);
    }
 
    return 0;
