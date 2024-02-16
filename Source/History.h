@@ -37,60 +37,76 @@ public:
    {
       buffer[head++] = value;
 
-      if (head == SIZE)
+      if (head == BUF_SIZE)
          head = 0;
 
       if (head == tail)
-         if (++tail == SIZE)
+         if (++tail == BUF_SIZE)
             tail = 0;
    }
 
    size_t size() const
    {
       return head >= tail ? head - tail
-                          : head + SIZE - tail;
+                          : head + BUF_SIZE - tail;
    }
 
-   TYPE at(size_t index) const
+   bool empty() const { return size() == 0; }
+
+   const TYPE& at(size_t index) const
    {
-      size_t first = head > 0 ? head - 1 : SIZE - 1;
-              
+      size_t first = head > 0 ? head - 1 : BUF_SIZE - 1;
+
       return first >= index ? buffer[first - index]
-                            : buffer[first + SIZE - index];
+                            : buffer[first + BUF_SIZE - index];
    }
 
-   TYPE operator[](size_t index) const
+   TYPE& at(size_t index)
    {
-      return at(index);
+      size_t first = head > 0 ? head - 1 : BUF_SIZE - 1;
+
+      return first >= index ? buffer[first - index]
+                            : buffer[first + BUF_SIZE - index];
    }
 
-   void stats(TYPE& min_, TYPE& max_, TYPE& avg_) const
+   const TYPE& operator[](size_t index) const { return at(index); }
+   TYPE&       operator[](size_t index)       { return at(index); }
+
+   TYPE min() const
    {
-      TYPE min = std::numeric_limits<TYPE>::max();
-      TYPE max = std::numeric_limits<TYPE>::lowest();
-      TYPE sum = 0;
+      TYPE lowest = std::numeric_limits<TYPE>::max();
 
       for(size_t i = 0; i < size(); ++i)
       {
-         TYPE v = at(i);
+         TYPE value = at(i);
 
-         if (v > max)
-            max = v;
-
-         if (v < min)
-            min = v;
-
-         sum += v;
+         if (value < lowest)
+            lowest = value;
       }
 
-      min_ = min;
-      max_ = max;
-      avg_ = sum / size();
+      return lowest;
+   }
+
+   TYPE max() const
+   {
+      TYPE highest = std::numeric_limits<TYPE>::lowest();
+
+      for(size_t i = 0; i < size(); ++i)
+      {
+         TYPE value = at(i);
+
+         if (value > highest)
+            highest = value;
+      }
+
+      return highest;
    }
 
 private:
+   static const size_t BUF_SIZE = SIZE + 1;
+
    size_t head{0};
    size_t tail{0};
-   TYPE   buffer[SIZE];
+   TYPE   buffer[BUF_SIZE];
 };
 

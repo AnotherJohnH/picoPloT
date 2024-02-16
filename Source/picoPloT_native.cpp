@@ -22,6 +22,8 @@
 
 // \brief picoPloT - native simulation
 
+#include <unistd.h>
+
 #include "ScaledFrame.h"
 #include "PLT/Event.h"
 
@@ -32,15 +34,18 @@ int main()
    ScaledFrame<3,16> window("picoPloT", 250, 122);
    Display           display(window);
 
-   display.setDay(2, 23);
-   display.setTime(19, 48);
-
-   signed temp = 20 << 8;
-
-   for(unsigned i = 0; i < 144; ++i)
+   for(unsigned d = 0; d < 8; ++d)
    {
-      display.recordTemp(temp);
-      temp += 0x20;
+      signed temp = (10 << 8) + (d << 6);
+
+      for(unsigned i = 0; i < 144; ++i)
+      {
+         display.setDay(d % 7, 10 + d);
+         display.setTime(19, 48);
+
+         display.recordTemp(temp);
+         temp += 0x10;
+      }
    }
 
    display.draw(/* partial */ false);

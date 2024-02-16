@@ -48,6 +48,11 @@ public:
 
    void setDay(unsigned dow_, unsigned dom_)
    {
+      if (dow_ != cur_dow)
+      {
+         new_day = true;
+      }
+
       cur_dow = dow_;
       cur_dom = dom_;
    }
@@ -62,49 +67,42 @@ public:
    {
       history_temp.push((value_ * 10) / 256);
 
-      signed avg_temp{};
-      history_temp.stats(min_temp, max_temp, avg_temp);
+      signed max_temp = history_temp.max();
+      signed min_temp = history_temp.min();
+
+      if (not history_max_temp.empty())
+      {
+         history_max_temp[0] = max_temp;
+         history_min_temp[0] = min_temp;
+      }
+
+      if (new_day)
+      {
+         new_day = false;
+
+         history_max_temp.push(max_temp);
+         history_min_temp.push(min_temp);
+      }
    }
 
    void draw(bool partial)
    {
-      char text[10];
-
       canvas.clear(WHITE);
 
       printTemp(168,  2, &GUI::font_teletext18, history_temp[0], /* brief */ true);
 
-      printText(190, 22, &GUI::font_teletext9, "max");
-      printTemp(208, 22, &GUI::font_teletext9, max_temp, /* brief */ true);
+      static const char* dow[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+      printText(180, 90, &GUI::font_teletext15, dow[cur_dow]);
 
-      printText(190, 34, &GUI::font_teletext9, "min");
-      printTemp(208, 34, &GUI::font_teletext9, min_temp, /* brief */ true);
+      char text[10];
+      snprintf(text, sizeof(text), "%2u", cur_dom);
+      printText(219, 90, &GUI::font_teletext15, text);
 
       snprintf(text, sizeof(text), "%02u:%02u", cur_hours, cur_mins);
       printText(180, 108, &GUI::font_teletext18, text);
 
-      temp_scale.setRange(min_temp - 10, max_temp + 10);
-
-      drawVertScale();
-      drawHorzScale();
-
-      for(signed i = 0; i < history_temp.size(); i++)
-      {
-         unsigned x = time_scale.getPos(-i * MINS_PER_PIXEL);
-         unsigned y = temp_scale.getPos(history_temp[i]);
-
-         canvas.drawPoint(BLACK, x, y);
-         canvas.drawPoint(BLACK, x + 1, y);
-         canvas.drawPoint(BLACK, x - 1, y);
-         canvas.drawPoint(BLACK, x, y + 1);
-         canvas.drawPoint(BLACK, x, y - 1);
-      }
-
-      static const char* dow[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
-      printText(180, 90, &GUI::font_teletext15, dow[cur_dow]);
-
-      snprintf(text, sizeof(text), "%2u", cur_dom);
-      printText(219, 90, &GUI::font_teletext15, text);
+      drawMainPlot();
+      drawSubPlot();
 
       if (partial)
          canvas.partialRefresh();
@@ -151,13 +149,18 @@ private:
 
    void drawVertScale()
    {
-      canvas.drawLine(BLACK,
-                      PLOT_X_LFT, temp_scale.getMinPos(),
-                      PLOT_X_LFT, temp_scale.getMaxPos());
+      signed min_temp = history_temp.min();
+      signed max_temp = history_temp.max();
+
+      temp_scale.setRange(min_temp - 10, max_temp + 10);
 
       canvas.drawLine(BLACK,
-                      PLOT_X_RGT, temp_scale.getMaxPos(),
-                      PLOT_X_RGT, temp_scale.getMinPos());
+                      MAIN_PLOT_X_LFT, temp_scale.getMinPos(),
+                      MAIN_PLOT_X_LFT, temp_scale.getMaxPos());
+
+      canvas.drawLine(BLACK,
+                      MAIN_PLOT_X_RGT, temp_scale.getMaxPos(),
+                      MAIN_PLOT_X_RGT, temp_scale.getMinPos());
 
       signed   min = ((temp_scale.getMinVal() + 9) / 10) * 10;
       signed   max = ((temp_scale.getMaxVal() + 9) / 10) * 10;
@@ -174,9 +177,9 @@ private:
          {
             tick_len = 3;
 
-            printTemp(PLOT_X_LFT - 20, y - 3, &GUI::font_teletext9, value, /* brief */ false);
+            printTemp(MAIN_PLOT_X_LFT - 20, y - 3, &GUI::font_teletext9, value, /* brief */ false);
 
-            for(unsigned x = PLOT_X_LFT + 5; x < PLOT_X_RGT; x+= 5)
+            for(unsigned x = MAIN_PLOT_X_LFT + 5; x < MAIN_PLOT_X_RGT; x+= 5)
                canvas.drawPoint(BLACK, x, y);
          }
          else
@@ -184,20 +187,20 @@ private:
             tick_len = 2;
          }
 
-         canvas.drawLine(BLACK, PLOT_X_LFT, y, PLOT_X_LFT - tick_len, y);
-         canvas.drawLine(BLACK, PLOT_X_RGT, y, PLOT_X_RGT + tick_len, y);
+         canvas.drawLine(BLACK, MAIN_PLOT_X_LFT, y, MAIN_PLOT_X_LFT - tick_len, y);
+         canvas.drawLine(BLACK, MAIN_PLOT_X_RGT, y, MAIN_PLOT_X_RGT + tick_len, y);
       }
    }
 
    void drawHorzScale()
    {
       canvas.drawLine(BLACK,
-                      time_scale.getMaxPos(), PLOT_Y_BTM,
-                      time_scale.getMinPos(), PLOT_Y_BTM);
+                      time_scale.getMaxPos(), MAIN_PLOT_Y_BTM,
+                      time_scale.getMinPos(), MAIN_PLOT_Y_BTM);
 
       canvas.drawLine(BLACK,
-                      time_scale.getMinPos(), PLOT_Y_TOP,
-                      time_scale.getMaxPos(), PLOT_Y_TOP);
+                      time_scale.getMinPos(), MAIN_PLOT_Y_TOP,
+                      time_scale.getMaxPos(), MAIN_PLOT_Y_TOP);
 
       unsigned cur_time = cur_hours * 60 + cur_mins;
 
@@ -216,19 +219,94 @@ private:
 
             char text[3];
             snprintf(text, sizeof(text), "%2d", tick_time / 60);
-            printText(x - 4, PLOT_Y_BTM + 3, &GUI::font_teletext9, text);
+            printText(x - 4, MAIN_PLOT_Y_BTM + 3, &GUI::font_teletext9, text);
 
-            for(unsigned y = PLOT_Y_TOP + 5; y < PLOT_Y_BTM; y+= 5)
+            for(unsigned y = MAIN_PLOT_Y_TOP + 5; y < MAIN_PLOT_Y_BTM; y+= 5)
                canvas.drawPoint(BLACK, x, y);
-
          }
          else
          {
             tick_len = 2;
          }
 
-         canvas.drawLine(BLACK, x, PLOT_Y_BTM, x, PLOT_Y_BTM + tick_len);
-         canvas.drawLine(BLACK, x, PLOT_Y_TOP, x, PLOT_Y_TOP - tick_len);
+         canvas.drawLine(BLACK, x, MAIN_PLOT_Y_BTM, x, MAIN_PLOT_Y_BTM + tick_len);
+         canvas.drawLine(BLACK, x, MAIN_PLOT_Y_TOP, x, MAIN_PLOT_Y_TOP - tick_len);
+      }
+   }
+
+   void drawPoint(unsigned x, unsigned y)
+   {
+      canvas.drawPoint(BLACK, x, y);
+      canvas.drawPoint(BLACK, x + 1, y);
+      canvas.drawPoint(BLACK, x - 1, y);
+      canvas.drawPoint(BLACK, x, y + 1);
+      canvas.drawPoint(BLACK, x, y - 1);
+   }
+
+   void drawMainPlot()
+   {
+      drawVertScale();
+      drawHorzScale();
+
+      for(signed i = 0; i < history_temp.size(); i++)
+      {
+         unsigned x = time_scale.getPos(-i * MINS_PER_PIXEL);
+         unsigned y = temp_scale.getPos(history_temp[i]);
+
+         drawPoint(x, y);
+      }
+   }
+
+   void drawSubPlot()
+   {
+      signed max_temp = history_max_temp.max();
+      printText(SUB_PLOT_X_LFT,      SUB_PLOT_Y_TOP - 10, &GUI::font_teletext9, "max");
+      printTemp(SUB_PLOT_X_RGT - 42, SUB_PLOT_Y_TOP - 10, &GUI::font_teletext9, max_temp, /* brief */ true);
+
+      canvas.drawLine(BLACK, SUB_PLOT_X_LFT, SUB_PLOT_Y_TOP,
+                             SUB_PLOT_X_RGT, SUB_PLOT_Y_TOP);
+
+      signed min_temp = history_min_temp.min();
+      printText(SUB_PLOT_X_LFT,      SUB_PLOT_Y_BTM + 3, &GUI::font_teletext9, "min");
+      printTemp(SUB_PLOT_X_RGT - 42, SUB_PLOT_Y_BTM + 3, &GUI::font_teletext9, min_temp, /* brief */ true);
+
+      canvas.drawLine(BLACK, SUB_PLOT_X_LFT, SUB_PLOT_Y_BTM,
+                             SUB_PLOT_X_RGT, SUB_PLOT_Y_BTM);
+
+      signed wk_min = 1000;
+      signed wk_max = 0;
+
+      for(unsigned day = 0; day < history_max_temp.size(); day++)
+      {
+         signed max = history_max_temp[day];
+         signed min = history_min_temp[day];
+
+         if (max > wk_max)
+            wk_max = max;
+
+         if (min < wk_min)
+            wk_min = min;
+      }
+
+      wk_temp_scale.setRange(wk_min, wk_max);
+
+      static const char dow_letter[7] = {'S', 'M', 'T', 'W', 'T', 'F', 'S'};
+
+      for(unsigned day = 0; day < history_max_temp.size(); day++)
+      {
+         unsigned x     = SUB_PLOT_X_RGT - day * 11 - 4;
+         unsigned max_y = wk_temp_scale.getPos(history_max_temp[day]);
+         unsigned min_y = wk_temp_scale.getPos(history_min_temp[day]);
+
+         canvas.fillRect(BLACK, x - 5, max_y, x + 4, min_y);
+
+         unsigned dow_y = ((max_y + min_y) / 2) - 4;
+         signed dow   = cur_dow - day;
+         if (dow < 0)
+            dow += 7;
+
+         canvas.drawChar(WHITE, BLACK, x - 3, dow_y,
+                         &GUI::font_teletext9, dow_letter[dow]);
       }
    }
 
@@ -236,24 +314,33 @@ private:
    static const unsigned MINS_PER_PIXEL = 10;
    static const unsigned SAMPLES        = HIST_HOURS * 60 / MINS_PER_PIXEL;
 
-   static const unsigned PLOT_X_LFT     = 20;
-   static const unsigned PLOT_Y_TOP     = 3;
-   static const unsigned PLOT_X_RGT     = PLOT_X_LFT + HIST_HOURS * 60 / MINS_PER_PIXEL;
-   static const unsigned PLOT_Y_BTM     = 122 - 10;
+   static const unsigned MAIN_PLOT_X_LFT = 20;
+   static const unsigned MAIN_PLOT_Y_TOP = 3;
+   static const unsigned MAIN_PLOT_X_RGT = MAIN_PLOT_X_LFT + HIST_HOURS * 60 / MINS_PER_PIXEL;
+   static const unsigned MAIN_PLOT_Y_BTM = 112;
+
+   static const unsigned SUB_PLOT_X_LFT = 175;
+   static const unsigned SUB_PLOT_Y_TOP = 32;
+   static const unsigned SUB_PLOT_X_RGT = 250;
+   static const unsigned SUB_PLOT_Y_BTM = 75;
 
    static const STB::Colour WHITE = STB::RGB(0xC0, 0xC0, 0xC0);
    static const STB::Colour BLACK = STB::RGB(0x00, 0x00, 0x00);
 
-   unsigned                  cur_dow{};
-   unsigned                  cur_dom{};
-   unsigned                  cur_hours{};
-   unsigned                  cur_mins{};
-   History<signed,SAMPLES>   history_temp;
-   signed                    min_temp{};
-   signed                    max_temp{};
-
    GUI::Canvas& canvas;
-   Scale        temp_scale{PLOT_Y_BTM, PLOT_Y_TOP};
-   Scale        time_scale{PLOT_X_LFT, PLOT_X_RGT};
+
+   unsigned cur_dow{};
+   unsigned cur_dom{};
+   unsigned cur_hours{};
+   unsigned cur_mins{};
+   bool     new_day{true};
+
+   History<signed,SAMPLES> history_temp;
+   History<signed,7>       history_max_temp;
+   History<signed,7>       history_min_temp;
+
+   Scale temp_scale{MAIN_PLOT_Y_BTM, MAIN_PLOT_Y_TOP};
+   Scale time_scale{MAIN_PLOT_X_LFT, MAIN_PLOT_X_RGT};
+   Scale wk_temp_scale{SUB_PLOT_Y_BTM, SUB_PLOT_Y_TOP};
 };
 
