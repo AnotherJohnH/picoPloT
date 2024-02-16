@@ -34,7 +34,6 @@ int main()
 
    display.setDay(2, 23);
    display.setTime(19, 48);
-   display.recordHumidity(543);
 
    signed temp = 20 << 8;
 

@@ -33,6 +33,7 @@
 
 #define PRINTF if (0) printf
 
+extern "C" void IRQ_RTC() {}
 
 int MTL_main()
 {
@@ -44,29 +45,48 @@ int MTL_main()
 
    temp_sensor.start();
 
-   rtc.setDate(2024, 1, 29, 1);
-   rtc.setTime(19, 40, 0);
+   rtc.setDate(2024, 2, 16, 1);
+   rtc.setTime(10, 30, 0);
    rtc.start();
 
    Display display(epaper);
 
-   unsigned humidity = 532;
+   unsigned temp_cycle = 0;
 
    while(true)
    {
+      // Current time
       rtc.sample();
       display.setDay(rtc.getDOTW(), rtc.getDay());
       display.setTime(rtc.getHour(), rtc.getMinute());
 
-      signed temp = temp_sensor.read();
-      PRINTF("%d.%u deg C\n", temp / 256, ((temp * 10) / 256) % 10);
+      // Post an alarm for the next minute
+      unsigned next_minute = rtc.getMinute() + 1;
+      if (next_minute == 60) next_minute = 0;
+      rtc.setMinuteAlarm(next_minute);
 
-      display.recordTemp(temp);
-      display.recordHumidity(humidity);
+      if (temp_cycle-- == 0)
+      {
+         temp_cycle = display.getSamplePeriodMins() - 1;
 
-      display.draw(/* partial */ false);
+         signed temp = temp_sensor.read();
+         PRINTF("%d.%u deg C\n", temp / 256, ((temp * 10) / 256) % 10);
 
-      usleep(display.getSamplePeriodSecs() * 1000000);
+         display.recordTemp(temp);
+         display.draw(/* partial */ false);
+
+         // XXX Seems to take four partial draws to recover from a full draw
+         for(unsigned i = 0; i < 3; ++i)
+            display.draw(/* partial */ true);
+      }
+      else
+      {
+         display.draw(/* partial */ true);
+      }
+
+      usleep(60 * 1000000);
+      // goto sleep
+      //__asm("wfi");
    }
 
    return 0;

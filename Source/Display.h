@@ -41,9 +41,9 @@ public:
       time_scale.setRange(-HIST_HOURS * 60, 0);
    }
 
-   unsigned getSamplePeriodSecs() const
+   unsigned getSamplePeriodMins() const
    {
-      return MINS_PER_PIXEL * 60;
+      return MINS_PER_PIXEL;
    }
 
    void setDay(unsigned dow_, unsigned dom_)
@@ -58,14 +58,11 @@ public:
       cur_mins  = mins_;
    }
 
-   void recordHumidity(unsigned value_)
-   {
-      history_humd.push(value_);
-   }
-
    void recordTemp(signed value_)
    {
       history_temp.push((value_ * 10) / 256);
+
+      signed avg_temp{};
       history_temp.stats(min_temp, max_temp, avg_temp);
    }
 
@@ -77,14 +74,11 @@ public:
 
       printTemp(168,  2, &GUI::font_teletext18, history_temp[0], /* brief */ true);
 
-      printText(180, 22, &GUI::font_teletext12, "mx");
-      printTemp(196, 24, &GUI::font_teletext12, max_temp, /* brief */ true);
+      printText(190, 22, &GUI::font_teletext9, "max");
+      printTemp(208, 22, &GUI::font_teletext9, max_temp, /* brief */ true);
 
-      printText(180, 36, &GUI::font_teletext12, "av");
-      printTemp(196, 38, &GUI::font_teletext12, avg_temp, /* brief */ true);
-
-      printText(180, 50, &GUI::font_teletext12, "mn");
-      printTemp(196, 52, &GUI::font_teletext12, min_temp, /* brief */ true);
+      printText(190, 34, &GUI::font_teletext9, "min");
+      printTemp(208, 34, &GUI::font_teletext9, min_temp, /* brief */ true);
 
       snprintf(text, sizeof(text), "%02u:%02u", cur_hours, cur_mins);
       printText(180, 108, &GUI::font_teletext18, text);
@@ -105,10 +99,6 @@ public:
          canvas.drawPoint(BLACK, x, y + 1);
          canvas.drawPoint(BLACK, x, y - 1);
       }
-
-      snprintf(text, sizeof(text), "%2u.%u", history_humd[0] / 10, history_humd[0] % 10);
-      printText(208, 70, &GUI::font_teletext12, text);
-      printText(244, 70, &GUI::font_teletext12, "%%");
 
       static const char* dow[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
       printText(180, 90, &GUI::font_teletext15, dow[cur_dow]);
@@ -259,14 +249,11 @@ private:
    unsigned                  cur_hours{};
    unsigned                  cur_mins{};
    History<signed,SAMPLES>   history_temp;
-   History<unsigned,SAMPLES> history_humd;
    signed                    min_temp{};
    signed                    max_temp{};
-   signed                    avg_temp{};
 
    GUI::Canvas& canvas;
    Scale        temp_scale{PLOT_Y_BTM, PLOT_Y_TOP};
-   Scale        humd_scale{PLOT_Y_BTM, PLOT_Y_TOP};
    Scale        time_scale{PLOT_X_LFT, PLOT_X_RGT};
 };
 
