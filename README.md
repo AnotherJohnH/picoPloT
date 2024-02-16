@@ -14,7 +14,7 @@ Both Pico and native targets should build on MacOS or Linux.
 
 ## Status
 
-Working well.
+Working
 
 ## Hardware information
 
@@ -22,20 +22,28 @@ Working well.
 
 For more information on the circuit above see the [schematic](https://github.com/AnotherJohnH/picoPloT/blob/main/docs/schematic_v0.01.pdf)
 
-## How to build
+## Software build
 
 ### Checkout
 
 This repo uses git sub-modules, so checkout using --recurse to clone all the
 dependent source...
 
-    git clone --recurse https://github.com/AnotherJohnH/picoPicoT.git
+    git clone --recurse https://github.com/AnotherJohnH/picoPloT.git
 
 or
 
     git clone --recurse ssh://git@github.com/AnotherJohnH/picoPloT.git
 
-### Build
+### Set date and time
+
+The date and time at reset is hard coded in [picoPlot_rpipipico.cpp](https://github.com/AnotherJohnH/picoPloT/blob/main/Source/picoPloT_rpipico.cpp)
+
+In the future this could be improved by...
++ Provide a UART interface for data/time setting
++ Implememnt a, digital watch style, two button date and time setting procedure
+
+### Compile and link
 
 Being developed on MacOS but should build fine on Linux too.
 
