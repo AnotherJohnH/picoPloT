@@ -41,10 +41,7 @@ public:
       time_scale.setRange(-HIST_HOURS * 60, 0);
    }
 
-   unsigned getSamplePeriodMins() const
-   {
-      return MINS_PER_PIXEL;
-   }
+   unsigned getSamplePeriodMins() const { return MINS_PER_PIXEL; }
 
    void setDay(unsigned dow_, unsigned dom_)
    {
@@ -89,18 +86,8 @@ public:
    {
       canvas.clear(WHITE);
 
-      printTemp(168,  2, &GUI::font_teletext18, history_temp[0], /* brief */ true);
-
-      static const char* dow[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
-      printText(180, 90, &GUI::font_teletext15, dow[cur_dow]);
-
-      char text[10];
-      snprintf(text, sizeof(text), "%2u", cur_dom);
-      printText(219, 90, &GUI::font_teletext15, text);
-
-      snprintf(text, sizeof(text), "%02u:%02u", cur_hours, cur_mins);
-      printText(180, 108, &GUI::font_teletext18, text);
-
+      dispTemp(168, 2);
+      dispTime(180, 90);
       drawMainPlot();
       drawSubPlot();
 
@@ -145,6 +132,24 @@ private:
       *s = '\0';
 
       printText(x, y, font, text);
+   }
+
+   void dispTemp(unsigned x, unsigned y)
+   {
+      printTemp(x, y, &GUI::font_teletext18, history_temp[0], /* brief */ true);
+   }
+
+   void dispTime(unsigned x, unsigned y)
+   {
+      static const char* dow[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+      printText(x, y, &GUI::font_teletext15, dow[cur_dow]);
+
+      char text[10];
+      snprintf(text, sizeof(text), "%2u", cur_dom);
+      printText(x + 39, y, &GUI::font_teletext15, text);
+
+      snprintf(text, sizeof(text), "%02u:%02u", cur_hours, cur_mins);
+      printText(x, y + 18, &GUI::font_teletext18, text);
    }
 
    void drawVertScale()
