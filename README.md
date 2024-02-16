@@ -14,7 +14,7 @@ Both Pico and native targets should build on MacOS or Linux.
 
 ## Status
 
-Working but incomplete and has some bugs.
+Working well.
 
 ## Hardware information
 
