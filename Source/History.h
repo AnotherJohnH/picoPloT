@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <limits>
 
@@ -35,6 +36,8 @@ public:
 
    void push(TYPE value)
    {
+      assert((head < BUF_SIZE) && (tail < BUF_SIZE));
+
       buffer[head++] = value;
 
       if (head == BUF_SIZE)
@@ -55,6 +58,8 @@ public:
 
    const TYPE& at(size_t index) const
    {
+      assert(index < SIZE);
+
       size_t first = head > 0 ? head - 1 : BUF_SIZE - 1;
 
       return first >= index ? buffer[first - index]
@@ -63,6 +68,8 @@ public:
 
    TYPE& at(size_t index)
    {
+      assert(index < SIZE);
+
       size_t first = head > 0 ? head - 1 : BUF_SIZE - 1;
 
       return first >= index ? buffer[first - index]
