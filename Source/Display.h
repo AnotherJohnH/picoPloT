@@ -61,6 +61,9 @@ public:
    void setTemp(signed value_)
    {
       cur_temp = (value_ * 10) / 256;
+
+      total_temp += cur_temp;
+      num_temp++;
    }
 
    void draw()
@@ -72,7 +75,12 @@ public:
          draw_cycle = MINS_PER_PIXEL - 1;
          partial    = false;
 
-         recordTemp(cur_temp);
+         // Record average temperature in the history
+         signed avg_temp = total_temp / signed(num_temp);
+         recordTemp(avg_temp);
+
+         num_temp   = 0;
+         total_temp = 0;
       }
 
       canvas.clear(WHITE);
@@ -363,6 +371,8 @@ private:
    unsigned cur_mins{};
    bool     new_day{true};
    signed   cur_temp{};
+   signed   total_temp{};
+   unsigned num_temp{};
    unsigned draw_cycle{0};
 
    History<signed,SAMPLES> history_temp;
