@@ -41,8 +41,6 @@ public:
       time_scale.setRange(-HIST_HOURS * 60, 0);
    }
 
-   unsigned getSamplePeriodMins() const { return MINS_PER_PIXEL; }
-
    void setDay(unsigned dow_, unsigned dom_)
    {
       if (dow_ != cur_dow)
@@ -60,9 +58,50 @@ public:
       cur_mins  = mins_;
    }
 
+   void setTemp(signed value_)
+   {
+      cur_temp = (value_ * 10) / 256;
+   }
+
+   void draw()
+   {
+      bool partial = true;
+
+      if (draw_cycle-- == 0)
+      {
+         draw_cycle = MINS_PER_PIXEL - 1;
+         partial    = false;
+
+         recordTemp(cur_temp);
+      }
+
+      canvas.clear(WHITE);
+
+      dispTemp(168, 2);
+      dispTime(180, 90);
+      drawMainPlot();
+      drawSubPlot();
+
+      if (partial)
+      {
+         canvas.partialRefresh();
+      }
+      else
+      {
+         canvas.refresh();
+
+         // XXX Seems to take four partial refreshes to recover E-paper from
+         //     a full refresh
+         canvas.partialRefresh();
+         canvas.partialRefresh();
+         canvas.partialRefresh();
+      }
+   }
+
+private:
    void recordTemp(signed value_)
    {
-      history_temp.push((value_ * 10) / 256);
+      history_temp.push(value_);
 
       signed max_temp = history_temp.max();
       signed min_temp = history_temp.min();
@@ -82,22 +121,6 @@ public:
       }
    }
 
-   void draw(bool partial)
-   {
-      canvas.clear(WHITE);
-
-      dispTemp(168, 2);
-      dispTime(180, 90);
-      drawMainPlot();
-      drawSubPlot();
-
-      if (partial)
-         canvas.partialRefresh();
-      else
-         canvas.refresh();
-   }
-
-private:
    void printText(unsigned x, unsigned y, const GUI::Font* font, const char* text)
    {
       canvas.drawText(BLACK, WHITE, x, y, font, text);
@@ -136,7 +159,7 @@ private:
 
    void dispTemp(unsigned x, unsigned y)
    {
-      printTemp(x, y, &GUI::font_teletext18, history_temp[0], /* brief */ true);
+      printTemp(x, y, &GUI::font_teletext18, cur_temp, /* brief */ true);
    }
 
    void dispTime(unsigned x, unsigned y)
@@ -339,6 +362,8 @@ private:
    unsigned cur_hours{};
    unsigned cur_mins{};
    bool     new_day{true};
+   signed   cur_temp{};
+   unsigned draw_cycle{0};
 
    History<signed,SAMPLES> history_temp;
    History<signed,7>       history_max_temp;

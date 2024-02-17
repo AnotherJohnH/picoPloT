@@ -20,54 +20,45 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------
 
-// \brief picoPloT - main program (native simulation)
+#pragma once
 
-#include <cstdio>
+namespace MTL {
 
-#include "native/ScaledFrame.h"
-#include "native/TempSens.h"
-#include "native/Rtc.h"
-
-#include "Display.h"
-
-#define PRINTF if (0) printf
-
-ScaledFrame<3,16>  epaper("picoPloT - simulated E-paper", 250, 122);
-MTL::TempSens      temp_sensor;
-MTL::Rtc           rtc;
-
-extern "C" void IRQ_RTC() { rtc.irq(); }
-
-int main()
+class TempSens
 {
-   PRINTF("picoPloT\n");
+public:
+   TempSens() = default;
 
-   temp_sensor.start();
+   void start() {}
 
-   rtc.setDate(2024, 2, 16);
-   rtc.setTime(20, 50, 0, 5);
-   rtc.start();
-
-   Display display(epaper);
-
-   while(true)
+   signed read()
    {
-      // Current time NOTE previous rtc.sleep() will sample the time
-      display.setDay(rtc.getDOTW(), rtc.getDay());
-      display.setTime(rtc.getHour(), rtc.getMinute());
+      if (up)
+      {
+         value += rate;
+         if (value > max)
+         {
+            up = false;
+         }
+      }
+      else
+      {
+         value -= rate;
+         if (value < min)
+         {
+            up = true;
+         }
+      }
 
-      signed temp = temp_sensor.read();
-      display.setTemp(temp);
-
-      PRINTF("DOW=%u DOM=%u\n", rtc.getDOTW(), rtc.getDay());
-      PRINTF("%2u:%2u\n", rtc.getHour(), rtc.getMinute());
-      PRINTF("%d.%u deg C\n", temp / 256, ((temp * 10) / 256) % 10);
-
-      display.draw();
-
-      // sleep for a minute since the last RTC event
-      rtc.sleep(60);
+      return value;
    }
 
-   return 0;
-}
+private:
+   signed max{(21 << 8) + 0x40};
+   signed min{( 9 << 8) + 0x80};
+   signed rate{1};
+   bool   up{false};
+   signed value{15 << 8};
+};
+
+} // namespace MTL

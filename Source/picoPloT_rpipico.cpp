@@ -51,32 +51,20 @@ int MTL_main()
 
    Display display(epaper);
 
-   unsigned temp_cycle = 0;
-
    while(true)
    {
-      // Current time
+      // Current time NOTE previous rtc.sleep() will sample the time
       display.setDay(rtc.getDOTW(), rtc.getDay());
       display.setTime(rtc.getHour(), rtc.getMinute());
 
-      if (temp_cycle-- == 0)
-      {
-         temp_cycle = display.getSamplePeriodMins() - 1;
+      signed temp = temp_sensor.read();
+      display.setTemp(temp);
 
-         signed temp = temp_sensor.read();
-         PRINTF("%d.%u deg C\n", temp / 256, ((temp * 10) / 256) % 10);
+      PRINTF("DOW=%u DOM=%u\n", rtc.getDOTW(), rtc.getDay());
+      PRINTF("%2u:%2u\n", rtc.getHour(), rtc.getMinute());
+      PRINTF("%d.%u deg C\n", temp / 256, ((temp * 10) / 256) % 10);
 
-         display.recordTemp(temp);
-         display.draw(/* partial */ false);
-
-         // XXX Seems to take four partial draws to recover from a full draw
-         for(unsigned i = 0; i < 3; ++i)
-            display.draw(/* partial */ true);
-      }
-      else
-      {
-         display.draw(/* partial */ true);
-      }
+      display.draw();
 
       // sleep for a minute since the last RTC event
       rtc.sleep(60);
@@ -84,4 +72,3 @@ int MTL_main()
 
    return 0;
 }
-
