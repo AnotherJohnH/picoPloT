@@ -41,6 +41,7 @@ public:
       time_scale.setRange(-HIST_HOURS * 60, 0);
    }
 
+   //! Update the current day of the week and day of the month
    void setDay(unsigned dow_, unsigned dom_)
    {
       if (dow_ != cur_dow)
@@ -52,12 +53,14 @@ public:
       cur_dom = dom_;
    }
 
+   //! Update the current time
    void setTime(unsigned hours_, unsigned mins_)
    {
       cur_hours = hours_;
       cur_mins  = mins_;
    }
 
+   //! Update the current temperature
    void setTemp(signed value_)
    {
       cur_temp = (value_ * 10) / 256;
@@ -66,6 +69,7 @@ public:
       num_temp++;
    }
 
+   //! Redraw
    void draw()
    {
       bool partial = true;
@@ -134,28 +138,48 @@ private:
       canvas.drawText(BLACK, WHITE, x, y, font, text);
    }
 
-   void printTemp(unsigned x, unsigned y, const GUI::Font* font, signed value, bool brief)
+   void printTemp(unsigned         x,
+                  unsigned         y,
+                  const GUI::Font* font,
+                  signed           value,
+                  bool             decimal,
+                  bool             units)
    {
       char text[8];
-
       char* s = text;
 
-      if (value < 0)
-         *s++ = '-';
-      else if (value > 0)
+      signed degs = value / 10;
+
+      if (abs(degs) < 10)
+      {
          *s++ = ' ';
+      }
+
+      if (value < 0)
+      {
+         *s++ = '-';
+         degs = -degs;
+      }
       else
          *s++ = ' ';
 
-      snprintf(s, 3, "%2d", value / 10);
-      s += 2;
-
-      if (brief)
+      if (abs(degs) >= 10)
       {
-         *s++ = '.';
-         snprintf(s, 2, "%d", value % 10);
-         s += 1;
+         *s++ = '0' + (degs / 10);
+      }
 
+      *s++ = '0' + (degs % 10);
+
+      if (decimal)
+      {
+         unsigned tenths = abs(value) % 10;
+
+         *s++ = '.';
+         *s++ = '0' + tenths;
+      }
+
+      if (units)
+      {
          *s++ = 0x7F;
          *s++ = 'C';
       }
@@ -167,7 +191,8 @@ private:
 
    void dispTemp(unsigned x, unsigned y)
    {
-      printTemp(x, y, &GUI::font_teletext18, cur_temp, /* brief */ true);
+      printTemp(x, y, &GUI::font_teletext18, cur_temp,
+                /* decimal */ true, /* units */ true);
    }
 
    void dispTime(unsigned x, unsigned y)
@@ -183,13 +208,24 @@ private:
       printText(x, y + 18, &GUI::font_teletext18, text);
    }
 
+   signed roundDn(signed value, signed unit)
+   {
+      if (value < 0)
+         value -= unit - 1;
+
+      return (value / unit) * unit;
+   }
+
+   signed roundUp(signed value, signed unit)
+   {
+      if (value > 0)
+         value += unit - 1;
+
+      return (value / unit) * unit;
+   }
+
    void drawVertScale()
    {
-      signed min_temp = history_temp.min();
-      signed max_temp = history_temp.max();
-
-      temp_scale.setRange(min_temp - 10, max_temp + 10);
-
       canvas.drawLine(BLACK,
                       MAIN_PLOT_X_LFT, temp_scale.getMinPos(),
                       MAIN_PLOT_X_LFT, temp_scale.getMaxPos());
@@ -198,33 +234,27 @@ private:
                       MAIN_PLOT_X_RGT, temp_scale.getMaxPos(),
                       MAIN_PLOT_X_RGT, temp_scale.getMinPos());
 
-      signed   min = ((temp_scale.getMinVal() + 9) / 10) * 10;
-      signed   max = ((temp_scale.getMaxVal() + 9) / 10) * 10;
+      // Range is 1/2 deg below minimum to 1/2 deg above the maximum
+      signed min_temp = history_temp.min() - 5;
+      signed max_temp = history_temp.max() + 5;
+      temp_scale.setRange(min_temp, max_temp);
 
-      unsigned grid = (max - min) < 100 ? 10 : 50;
-      unsigned tick = grid / 5;
+      unsigned grid = (max_temp - min_temp) < 100 ? 10 : 50;
+      signed   min  = roundUp(min_temp, grid);
+      signed   max  = roundDn(max_temp, grid);
 
-      for(unsigned value = min; value < max; value += tick)
+      for(signed value = min; value <= max; value += grid)
       {
          unsigned y = temp_scale.getPos(value);
-         unsigned tick_len;
 
-         if ((value % grid) == 0)
-         {
-            tick_len = 3;
+         printTemp(MAIN_PLOT_X_LFT - 20, y - 3, &GUI::font_teletext9, value,
+                   /* decimal */ false, /* uniyts */ false);
 
-            printTemp(MAIN_PLOT_X_LFT - 20, y - 3, &GUI::font_teletext9, value, /* brief */ false);
+         for(unsigned x = MAIN_PLOT_X_LFT + 5; x < MAIN_PLOT_X_RGT; x+= 5)
+            canvas.drawPoint(BLACK, x, y);
 
-            for(unsigned x = MAIN_PLOT_X_LFT + 5; x < MAIN_PLOT_X_RGT; x+= 5)
-               canvas.drawPoint(BLACK, x, y);
-         }
-         else
-         {
-            tick_len = 2;
-         }
-
-         canvas.drawLine(BLACK, MAIN_PLOT_X_LFT, y, MAIN_PLOT_X_LFT - tick_len, y);
-         canvas.drawLine(BLACK, MAIN_PLOT_X_RGT, y, MAIN_PLOT_X_RGT + tick_len, y);
+         canvas.drawLine(BLACK, MAIN_PLOT_X_LFT, y, MAIN_PLOT_X_LFT - 3, y);
+         canvas.drawLine(BLACK, MAIN_PLOT_X_RGT, y, MAIN_PLOT_X_RGT + 3, y);
       }
    }
 
@@ -295,20 +325,6 @@ private:
 
    void drawSubPlot()
    {
-      signed max_temp = history_max_temp.max();
-      printText(SUB_PLOT_X_LFT,      SUB_PLOT_Y_TOP - 10, &GUI::font_teletext9, "max");
-      printTemp(SUB_PLOT_X_RGT - 42, SUB_PLOT_Y_TOP - 10, &GUI::font_teletext9, max_temp, /* brief */ true);
-
-      canvas.drawLine(BLACK, SUB_PLOT_X_LFT, SUB_PLOT_Y_TOP,
-                             SUB_PLOT_X_RGT, SUB_PLOT_Y_TOP);
-
-      signed min_temp = history_min_temp.min();
-      printText(SUB_PLOT_X_LFT,      SUB_PLOT_Y_BTM + 3, &GUI::font_teletext9, "min");
-      printTemp(SUB_PLOT_X_RGT - 42, SUB_PLOT_Y_BTM + 3, &GUI::font_teletext9, min_temp, /* brief */ true);
-
-      canvas.drawLine(BLACK, SUB_PLOT_X_LFT, SUB_PLOT_Y_BTM,
-                             SUB_PLOT_X_RGT, SUB_PLOT_Y_BTM);
-
       signed wk_min = 1000;
       signed wk_max = 0;
 
@@ -344,6 +360,22 @@ private:
          canvas.drawChar(WHITE, BLACK, x - 3, dow_y,
                          &GUI::font_teletext9, dow_letter[dow]);
       }
+
+      signed max_temp = history_max_temp.max();
+      printText(SUB_PLOT_X_LFT,      SUB_PLOT_Y_TOP - 10, &GUI::font_teletext9, "max");
+      printTemp(SUB_PLOT_X_RGT - 42, SUB_PLOT_Y_TOP - 10, &GUI::font_teletext9, max_temp,
+                /* decimal */ true, /* units */ true);
+
+      canvas.drawLine(BLACK, SUB_PLOT_X_LFT, SUB_PLOT_Y_TOP,
+                             SUB_PLOT_X_RGT, SUB_PLOT_Y_TOP);
+
+      signed min_temp = history_min_temp.min();
+      printText(SUB_PLOT_X_LFT,      SUB_PLOT_Y_BTM + 3, &GUI::font_teletext9, "min");
+      printTemp(SUB_PLOT_X_RGT - 42, SUB_PLOT_Y_BTM + 3, &GUI::font_teletext9, min_temp,
+                /* decimal */ true, /* units */ true);
+
+      canvas.drawLine(BLACK, SUB_PLOT_X_LFT, SUB_PLOT_Y_BTM,
+                             SUB_PLOT_X_RGT, SUB_PLOT_Y_BTM);
    }
 
    static const unsigned HIST_HOURS     = 24;
