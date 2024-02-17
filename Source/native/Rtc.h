@@ -82,6 +82,9 @@ public:
       PLT::Event::Message event;
       PLT::Event::poll(event);
 
+      if (event.type == PLT::Event::QUIT)
+         exit(0);
+
       if (count++ == 24 * 60 * 7)
       {
          PLT::Event::eventLoop();
