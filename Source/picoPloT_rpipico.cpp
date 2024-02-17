@@ -45,8 +45,8 @@ int MTL_main()
 
    temp_sensor.start();
 
-   rtc.setDate(2024, 2, 16);
-   rtc.setTime(20, 50, 0, 5);
+   rtc.setDate(2024, 2, 17);
+   rtc.setTime(17, 00, 0, 6);
    rtc.start();
 
    Display display(epaper);

@@ -34,7 +34,7 @@
 
 ScaledFrame<3,16>  epaper("picoPloT - simulated E-paper", 250, 122);
 MTL::TempSens      temp_sensor;
-MTL::Rtc           rtc;
+MTL::Rtc<7*24*60>  rtc;
 
 extern "C" void IRQ_RTC() { rtc.irq(); }
 
@@ -44,8 +44,8 @@ int main()
 
    temp_sensor.start();
 
-   rtc.setDate(2024, 2, 16);
-   rtc.setTime(20, 50, 0, 5);
+   rtc.setDate(2024, 2, 17);
+   rtc.setTime(17, 00, 0, 6);
    rtc.start();
 
    Display display(epaper);

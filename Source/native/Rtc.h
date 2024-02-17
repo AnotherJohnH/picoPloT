@@ -30,6 +30,7 @@ extern "C" void IRQ_RTC();
 
 namespace MTL {
 
+template <unsigned IRQ_LIMIT = 0>
 class Rtc
 {
 public:
@@ -85,7 +86,7 @@ public:
       if (event.type == PLT::Event::QUIT)
          exit(0);
 
-      if (count++ == 24 * 60 * 7)
+      if (++irq_count == IRQ_LIMIT)
       {
          PLT::Event::eventLoop();
          exit(0);
@@ -93,7 +94,8 @@ public:
    }
 
 private:
-   unsigned count {0};
+   unsigned irq_count {0};
+
    unsigned year;
    unsigned month;
    unsigned day;
