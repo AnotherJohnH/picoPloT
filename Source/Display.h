@@ -208,7 +208,7 @@ private:
       printText(x, y + 18, &GUI::font_teletext18, text);
    }
 
-   signed roundDn(signed value, signed unit)
+   static signed roundDn(signed value, signed unit)
    {
       if (value < 0)
          value -= unit - 1;
@@ -216,7 +216,7 @@ private:
       return (value / unit) * unit;
    }
 
-   signed roundUp(signed value, signed unit)
+   static signed roundUp(signed value, signed unit)
    {
       if (value > 0)
          value += unit - 1;

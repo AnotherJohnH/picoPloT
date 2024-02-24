@@ -24,18 +24,17 @@
 
 #include <cstdio>
 
-#include "MTL/EPaper.h"
-#include "MTL/EPaperCanvas.h"
-#include "MTL/TempSens.h"
+#include "MTL/EPaper_WS2_13_V3.h"
+#include "MTL/TempSens_MCP9808.h"
 #include "MTL/rp2040/Rtc.h"
 
 #include "Display.h"
 
 #define PRINTF if (0) printf
 
-MTL::EPaperCanvas<MTL::EPaper_213_V3, /* SWAP_XY */ true> epaper;
-MTL::TempSens_MCP9808<MTL::I2C0_P21_P22>                  temp_sensor;
-MTL::Rtc                                                  rtc;
+MTL::EPaper_WS2_13_V3::Canvas            epaper;
+MTL::TempSens_MCP9808<MTL::I2C0_P21_P22> temp_sensor;
+MTL::Rtc                                 rtc;
 
 extern "C" void IRQ_RTC() { rtc.irq(); }
 
@@ -45,8 +44,8 @@ int MTL_main()
 
    temp_sensor.start();
 
-   rtc.setDate(2024, 2, 17);
-   rtc.setTime(17, 00, 0, 6);
+   rtc.setDate(2024, 2, 25);
+   rtc.setTime(21, 0, 0, 0);
    rtc.start();
 
    Display display(epaper);
