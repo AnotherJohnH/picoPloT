@@ -32,6 +32,7 @@
 #include "Scale.h"
 #include "History.h"
 
+template <unsigned WIDTH, unsigned HEIGHT>
 class Display
 {
 public:
@@ -89,8 +90,8 @@ public:
 
       canvas.clear(WHITE);
 
-      dispTemp(168, 2);
-      dispTime(180, 90);
+      dispTemp(WIDTH - 82, 2);
+      dispTime(WIDTH - 70, 90);
       drawMainPlot();
       drawSubPlot();
 
@@ -387,9 +388,9 @@ private:
    static const unsigned MAIN_PLOT_X_RGT = MAIN_PLOT_X_LFT + HIST_HOURS * 60 / MINS_PER_PIXEL;
    static const unsigned MAIN_PLOT_Y_BTM = 112;
 
-   static const unsigned SUB_PLOT_X_LFT = 175;
+   static const unsigned SUB_PLOT_X_LFT = WIDTH - 75;
    static const unsigned SUB_PLOT_Y_TOP = 32;
-   static const unsigned SUB_PLOT_X_RGT = 250;
+   static const unsigned SUB_PLOT_X_RGT = WIDTH;
    static const unsigned SUB_PLOT_Y_BTM = 75;
 
    static const STB::Colour WHITE = STB::RGB(0xC0, 0xC0, 0xC0);

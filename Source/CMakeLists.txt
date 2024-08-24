@@ -20,13 +20,28 @@
 #  SOFTWARE.
 #-------------------------------------------------------------------------------
 
-add_executable(picoPloT picoPloT_${PLT_TARGET}.cpp)
+if(${PLT_TARGET} STREQUAL rpipico)
 
-target_include_directories(picoPloT PRIVATE .)
+   set(config_list
+       BADGER2040
+       WAVESHARE_EPAPER)
 
-if(${PLT_TARGET} STREQUAL native)
-   target_link_libraries(picoPloT PRIVATE PLT STB GUI)
-else()
-   target_link_libraries(picoPloT PRIVATE TNY MTL TNY GUI)
+   set(target_libs TNY MTL TNY GUI)
+
+elseif(${PLT_TARGET} STREQUAL native)
+
+   set(config_list
+       NATIVE)
+
+   set(target_libs PLT STB GUI)
+
 endif()
 
+foreach(config ${config_list})
+
+   add_executable(            picoPloT_${config} picoPloT.cpp)
+   target_compile_definitions(picoPloT_${config} PRIVATE HW_${config})
+   target_include_directories(picoPloT_${config} PRIVATE .)
+   target_link_libraries(     picoPloT_${config} PRIVATE ${target_libs})
+
+endforeach()
