@@ -73,12 +73,12 @@ public:
    //! Redraw
    void draw()
    {
-      bool partial = true;
+      bool quick = true;
 
       if (draw_cycle-- == 0)
       {
          draw_cycle = MINS_PER_PIXEL - 1;
-         partial    = false;
+         quick    = false;
 
          // Record average temperature in the history
          signed avg_temp = total_temp / signed(num_temp);
@@ -95,19 +95,13 @@ public:
       drawMainPlot();
       drawSubPlot();
 
-      if (partial)
+      if (quick)
       {
-         canvas.partialRefresh();
+         canvas.quickRefresh();
       }
       else
       {
          canvas.refresh();
-
-         // XXX Seems to take four partial refreshes to recover E-paper from
-         //     a full refresh
-         canvas.partialRefresh();
-         canvas.partialRefresh();
-         canvas.partialRefresh();
       }
    }
 
