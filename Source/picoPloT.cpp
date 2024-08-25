@@ -31,12 +31,12 @@
 #if defined(HW_WAVESHARE_EPAPER)
 
 #define HW_EPAPER_WAVESHARE
-#define HW_TEMP_SENSE_MCP9808
+#define HW_TEMP_SENSE_P21_P22_MCP9808
 
 #elif defined(HW_BADGER2040)
 
 #define HW_EPAPER_BADGER2040
-#define HW_TEMP_SENSE_FAKE
+#define HW_TEMP_SENSE_BADGER_MCP9808
 
 #elif defined(HW_NATIVE)
 
@@ -84,12 +84,18 @@ ScaledFrame<3,16> epaper("picoPloT - simulated E-paper", WIDTH, HEIGHT);
 
 // --- TEMP SENSE --------------------------------------------------------------
 
-#if defined(HW_TEMP_SENSE_MCP9808)
+#if defined(HW_TEMP_SENSE_P21_P22_MCP9808)
 
 #include "MTL/TempSens_MCP9808.h"
 #include "MTL/rp2040/I2C.h"
 
 MTL::TempSens_MCP9808<MTL::I2C0_P21_P22> temp_sensor;
+
+#elif defined(HW_TEMP_SENSE_BADGER_MCP9808)
+
+#include "MTL/TempSens_MCP9808.h"
+
+MTL::TempSens_MCP9808<MTL::badger2040::I2C_QwSt> temp_sensor;
 
 #elif defined(HW_TEMP_SENSE_FAKE)
 
