@@ -78,7 +78,7 @@ public:
       if (draw_cycle-- == 0)
       {
          draw_cycle = MINS_PER_PIXEL - 1;
-         quick    = false;
+         quick      = false;
 
          // Record average temperature in the history
          signed avg_temp = total_temp / signed(num_temp);

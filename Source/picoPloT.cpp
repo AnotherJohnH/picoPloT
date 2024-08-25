@@ -74,8 +74,8 @@ constexpr unsigned HEIGHT = MTL::badger2040::EPaper::getHeight();
 
 #include "fake/ScaledFrame.h"
 
-constexpr unsigned WIDTH  = 250;
-constexpr unsigned HEIGHT = 122;
+constexpr unsigned WIDTH  = 296;
+constexpr unsigned HEIGHT = 128;
 
 ScaledFrame<3,16> epaper("picoPloT - simulated E-paper", WIDTH, HEIGHT);
 
