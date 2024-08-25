@@ -374,7 +374,7 @@ private:
    }
 
    static const unsigned HIST_HOURS     = 24;
-   static const unsigned MINS_PER_PIXEL = 10;
+   static const unsigned MINS_PER_PIXEL = WIDTH >= 296 ? 8 : 10;
    static const unsigned SAMPLES        = HIST_HOURS * 60 / MINS_PER_PIXEL;
 
    static const unsigned MAIN_PLOT_X_LFT = 20;
