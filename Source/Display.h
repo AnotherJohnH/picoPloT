@@ -70,6 +70,11 @@ public:
       num_temp++;
    }
 
+   void setVBat(unsigned vbat_)
+   {
+      vbat = vbat_;
+   }
+
    //! Redraw
    void draw()
    {
@@ -91,7 +96,8 @@ public:
       canvas.clear(WHITE);
 
       dispTemp(WIDTH - 82, 2);
-      dispTime(WIDTH - 70, 90);
+      dispTime(WIDTH - 60, 94);
+      dispVBat(WIDTH - 88, 110);
       drawMainPlot();
       drawSubPlot();
 
@@ -201,6 +207,15 @@ private:
 
       snprintf(text, sizeof(text), "%02u:%02u", cur_hours, cur_mins);
       printText(x, y + 18, &GUI::font_teletext18, text);
+   }
+
+   void dispVBat(unsigned x, unsigned y)
+   {
+      char text[10];
+      snprintf(text, sizeof(text), "%4u", vbat);
+      printText(x, y, &GUI::font_teletext9, text);
+
+      printText(x, y + 9, &GUI::font_teletext9, "mV");
    }
 
    static signed roundDn(signed value, signed unit)
@@ -401,6 +416,7 @@ private:
    signed   total_temp{};
    unsigned num_temp{};
    unsigned draw_cycle{0};
+   unsigned vbat{0};
 
    History<signed,SAMPLES> history_temp;
    History<signed,7>       history_max_temp;

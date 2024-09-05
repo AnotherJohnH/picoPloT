@@ -123,6 +123,40 @@ MTL::Rtc rtc;
 #endif
 
 
+// --- POWER -------------------------------------------------------------------
+
+#if defined(HW_BADGER2040)
+
+MTL::badger2040::Enable3V3  bat_latch{};
+MTL::badger2040::EnableVRef enable_vref{};
+MTL::Adc                    adc{};
+
+//! Return battery (mV)
+static unsigned getVBat()
+{
+   enable_vref = true;
+   adc.enable(true);
+
+   unsigned vref_raw = adc.readOnce(MTL::badger2040::ADC_CHAN_VREF);
+   unsigned vbat_raw = adc.readOnce(MTL::badger2040::ADC_CHAN_VBAT);
+
+   adc.enable(false);
+   enable_vref = false;
+
+   unsigned vbat_millivolt = MTL::badger2040::VREF_MILLIVOLT * vbat_raw / vref_raw;
+
+   return vbat_millivolt * MTL::badger2040::VBAT_SCALE;
+}
+
+#else
+
+bool bat_latch{false};
+
+static unsigned getVBat() { return 3300; }
+
+#endif
+
+
 //------------------------------------------------------------------------------
 
 #include "Display.h"
@@ -131,6 +165,8 @@ extern "C" void IRQ_RTC() { rtc.irq(); }
 
 int main()
 {
+   bat_latch = true;
+
    PRINTF("picoPloT\n");
 
    temp_sensor.start();
@@ -149,6 +185,9 @@ int main()
 
       signed temp = temp_sensor.read();
       display.setTemp(temp);
+
+      unsigned vbat = getVBat();
+      display.setVBat(vbat);
 
       PRINTF("DOW=%u DOM=%u\n", rtc.getDOTW(), rtc.getDay());
       PRINTF("%2u:%2u\n", rtc.getHour(), rtc.getMinute());
