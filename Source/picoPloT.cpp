@@ -135,8 +135,8 @@ int main()
 
    temp_sensor.start();
 
-   rtc.setDate(2024, 3, 27);
-   rtc.setTime(21, 40, 0, 3);
+   rtc.setDate(2024, 9, 5);
+   rtc.setTime(18, 50, 0, 4);
    rtc.start();
 
    Display<WIDTH,HEIGHT> display(epaper);
