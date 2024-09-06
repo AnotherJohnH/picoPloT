@@ -129,23 +129,19 @@ MTL::Rtc rtc;
 
 MTL::badger2040::Enable3V3  bat_latch{};
 MTL::badger2040::EnableVRef enable_vref{};
-MTL::Adc                    adc{};
+MTL::badger2040::AdcVRef    vref;
+MTL::badger2040::AdcVBat    vbat;
 
 //! Return battery (mV)
-static unsigned getVBat()
+unsigned getVBat()
 {
    enable_vref = true;
-   adc.enable(true);
-
-   unsigned vref_raw = adc.readOnce(MTL::badger2040::ADC_CHAN_VREF);
-   unsigned vbat_raw = adc.readOnce(MTL::badger2040::ADC_CHAN_VBAT);
-
-   adc.enable(false);
+   uint32_t vref_raw = vref;
    enable_vref = false;
 
-   unsigned vbat_millivolt = MTL::badger2040::VREF_MILLIVOLT * vbat_raw / vref_raw;
+   unsigned vbat_sense_millivolt = MTL::badger2040::VREF_MILLIVOLT * vbat / vref_raw;
 
-   return vbat_millivolt * MTL::badger2040::VBAT_SCALE;
+   return vbat_sense_millivolt * MTL::badger2040::VBAT_SCALE;
 }
 
 #else
@@ -171,8 +167,8 @@ int main()
 
    temp_sensor.start();
 
-   rtc.setDate(2024, 9, 5);
-   rtc.setTime(18, 50, 0, 4);
+   rtc.setDate(2024, 9, 6);
+   rtc.setTime(19, 30, 0, 5);
    rtc.start();
 
    Display<WIDTH,HEIGHT> display(epaper);
