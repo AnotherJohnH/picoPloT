@@ -22,6 +22,10 @@ Working
 
 For more information on the circuit above see the [schematic](https://github.com/AnotherJohnH/picoPloT/blob/main/docs/schematic_v0.01.pdf)
 
+Also builds for the pimoroni badger 2040...
+
+![badger 2040](docs/badger_2040.jpg)
+
 ## Software build
 
 ### Checkout
