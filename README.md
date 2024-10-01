@@ -62,9 +62,10 @@ Build directly using cmake...
     cmake -DCMAKE_BUILD_TYPE=Release -DPLT_TARGET=rpipico -DCMAKE_TOOLCHAIN_FILE=Platform/MTL/rpipico/toolchain.cmake ..
     make
 
-Flashable image will be found under the build sub directory here...
+Flashable images will be found under the build sub directory here...
 
-    .../Source/picoPloT.uf2
+    .../Source/picoPloT_WAVESHARE_EPAPER.uf2
+    .../Source/picoPloT_BADGER2040.uf2
 
 ## License
 
