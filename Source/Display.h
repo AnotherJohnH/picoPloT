@@ -97,7 +97,7 @@ public:
 
       dispTemp(WIDTH - 82, 2);
       dispTime(WIDTH - 60, 94);
-      dispVBat(WIDTH - 88, 110);
+      //dispVBat(WIDTH - 88, 110);
       drawMainPlot();
       drawSubPlot();
 
