@@ -64,8 +64,8 @@ Build directly using cmake...
 
 Flashable images will be found under the build sub directory here...
 
-    .../Source/picoPloT_WAVESHARE_EPAPER.uf2
-    .../Source/picoPloT_BADGER2040.uf2
+    .../picoPloT_WAVESHARE_EPAPER.uf2
+    .../picoPloT_BADGER2040.uf2
 
 ## License
 

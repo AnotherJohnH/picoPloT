@@ -39,9 +39,15 @@ endif()
 
 foreach(config ${config_list})
 
-   add_executable(            picoPloT_${config} picoPloT.cpp)
+   add_executable(picoPloT_${config} picoPloT.cpp)
+
    target_compile_definitions(picoPloT_${config} PRIVATE HW_${config})
+
    target_include_directories(picoPloT_${config} PRIVATE .)
-   target_link_libraries(     picoPloT_${config} PRIVATE ${target_libs})
+
+   target_link_libraries(picoPloT_${config} PRIVATE ${target_libs})
+
+   set_target_properties(picoPloT_${config} PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 endforeach()
