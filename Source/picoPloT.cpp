@@ -7,103 +7,16 @@
 
 #include <cstdio>
 
+#include "Hardware/picoSense/Config.h"
+
 #define PRINTF if (0) printf
 
-// --- Target Hardware Configuration --------------------------------------------------
+constexpr unsigned WIDTH  = hw::EPaper::getWidth();
+constexpr unsigned HEIGHT = hw::EPaper::getHeight();
 
-#if defined(HW_WAVESHARE_EPAPER)
-
-#define HW_EPAPER_WAVESHARE
-#define HW_TEMP_SENSE_P21_P22_MCP9808
-
-#elif defined(HW_BADGER2040)
-
-#define HW_EPAPER_BADGER2040
-#define HW_TEMP_SENSE_BADGER_MCP9808
-
-#elif defined(HW_NATIVE)
-
-#define HW_EPAPER_NATIVE
-#define HW_TEMP_SENSE_FAKE
-
-#else
-
-#error "Target hardware not specified"
-
-#endif
-
-
-// --- EPAPER ------------------------------------------------------------------
-
-#if defined(HW_EPAPER_WAVESHARE)
-
-#include "MTL/EPaper_WS2_13_V3.h"
-
-MTL::EPaper_WS2_13_V3::Canvas epaper;
-
-constexpr unsigned WIDTH  = MTL::EPaper_WS2_13_V3::getWidth();
-constexpr unsigned HEIGHT = MTL::EPaper_WS2_13_V3::getHeight();
-
-#elif defined(HW_EPAPER_BADGER2040)
-
-#include "MTL/badger2040.h"
-
-MTL::badger2040::EPaper::Canvas epaper;
-
-constexpr unsigned WIDTH  = MTL::badger2040::EPaper::getWidth();
-constexpr unsigned HEIGHT = MTL::badger2040::EPaper::getHeight();
-
-#elif defined(HW_EPAPER_NATIVE)
-
-#include "fake/ScaledFrame.h"
-
-constexpr unsigned WIDTH  = 296;
-constexpr unsigned HEIGHT = 128;
-
-ScaledFrame<3,16> epaper("picoPloT - simulated E-paper", WIDTH, HEIGHT);
-
-#endif
-
-
-// --- TEMP SENSE --------------------------------------------------------------
-
-#if defined(HW_TEMP_SENSE_P21_P22_MCP9808)
-
-#include "MTL/TempSens_MCP9808.h"
-#include "MTL/rp2040/I2C.h"
-
-MTL::TempSens_MCP9808<MTL::I2C0_P21_P22> temp_sensor;
-
-#elif defined(HW_TEMP_SENSE_BADGER_MCP9808)
-
-#include "MTL/TempSens_MCP9808.h"
-
-MTL::TempSens_MCP9808<MTL::badger2040::I2C_QwSt> temp_sensor;
-
-#elif defined(HW_TEMP_SENSE_FAKE)
-
-#include "fake/TempSens.h"
-
-MTL::TempSens temp_sensor;
-
-#endif
-
-
-// --- RTC ---------------------------------------------------------------------
-
-#if defined(HW_NATIVE)
-
-#include "fake/Rtc.h"
-
-MTL::Rtc<7*24*60> rtc;
-
-#else
-
-#include "MTL/rp2040/Rtc.h"
-
-MTL::Rtc rtc;
-
-#endif
+hw::EPaper::Canvas epaper;
+hw::TempSense      temp_sensor;
+hw::Rtc            rtc;
 
 
 // --- POWER -------------------------------------------------------------------

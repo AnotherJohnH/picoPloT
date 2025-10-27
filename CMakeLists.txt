@@ -11,11 +11,7 @@ project(picoPloT
 
 include(CTest)
 
-add_subdirectory(Platform)
-add_subdirectory(Source)
+set(HARDWARE picoSense)
 
-if(${PLT_TARGET} STREQUAL rpipico OR ${PLT_TARGET} STREQUAL rpipico2)
-   math(EXPR plt_bcd_version "${CMAKE_MAJOR_VERSION} * 0x100 + ${CMAKE_MINOR_VERSION}"
-        OUTPUT_FORMAT HEXADECIMAL)
-   target_compile_definitions(MTL PUBLIC PLT_BCD_VERSION=${plt_bcd_version})
-endif()
+add_subdirectory(Hardware)
+add_subdirectory(Source)
