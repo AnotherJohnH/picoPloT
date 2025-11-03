@@ -18,13 +18,15 @@ Working
 
 ## Hardware information
 
-![prototype](docs/breadboard_v0.01.jpg)
+![prototype](https://github.com/AnotherJohnH/Hardware/blob/main/picoSense/docs/breadboard_v0.01.jpg)
 
-For more information on the circuit above see the [schematic](https://github.com/AnotherJohnH/picoPloT/blob/main/docs/schematic_v0.01.pdf)
+For more information on the circuit above see the [schematic](https://github.com/AnotherJohnH/Hardware/blob/main/picoSense/docs/schematic_v0.01.pdf)
 
 Also builds for the pimoroni badger 2040...
 
-![badger 2040](docs/badger_2040.jpg)
+![badger 2040](https://github.com/AnotherJohnH/Hardware/blob/main/picoSense/docs/badger_2040.jpg)
+
+See [README](https://github.com/AnotherJohnH/Hardware/blob/main/picoSense/README.md) for more information.
 
 ## Software build
 
