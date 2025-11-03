@@ -8,15 +8,41 @@
 #include <cstdio>
 
 #include "Hardware/picoSense/Config.h"
+#include "Hardware/FilePortal.h"
+
+#include "Display.h"
 
 #define PRINTF if (0) printf
+
+// --- E-PAPER -----------------------------------------------------------------
 
 constexpr unsigned WIDTH  = hw::EPaper::getWidth();
 constexpr unsigned HEIGHT = hw::EPaper::getHeight();
 
-hw::EPaper::Canvas epaper;
-hw::TempSense      temp_sensor;
-hw::Rtc            rtc;
+static hw::EPaper::Canvas epaper;
+static hw::EPaper         stub{};
+
+
+// --- SENSRO ------------------------------------------------------------------
+
+static hw::TempSense temp_sensor;
+
+
+// --- USB ---------------------------------------------------------------------
+
+static hw::FilePortal file_portal{"picoPlot",
+                                  "https://github.com/AnotherJohnH/picoPlot"};
+
+static hw::UsbFile    usb{0x91C0, "picoPlot", file_portal};
+
+extern "C" void IRQ_USBCTRL() { usb.irq(); }
+
+
+// --- RTC ---------------------------------------------------------------------
+
+static hw::Rtc rtc;
+
+extern "C" void IRQ_RTC() { rtc.irq(); }
 
 
 // --- POWER -------------------------------------------------------------------
@@ -51,12 +77,10 @@ static unsigned getVBat() { return 3300; }
 
 //------------------------------------------------------------------------------
 
-#include "Display.h"
-
-extern "C" void IRQ_RTC() { rtc.irq(); }
-
 int main()
 {
+   file_portal.addREADME("picoPlot");
+
    bat_latch = true;
 
    PRINTF("picoPloT\n");
