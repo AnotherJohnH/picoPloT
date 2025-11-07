@@ -20,7 +20,6 @@ constexpr unsigned WIDTH  = hw::EPaper::getWidth();
 constexpr unsigned HEIGHT = hw::EPaper::getHeight();
 
 static hw::EPaper::Canvas epaper;
-static hw::EPaper         stub{};
 
 
 // --- SENSRO ------------------------------------------------------------------
