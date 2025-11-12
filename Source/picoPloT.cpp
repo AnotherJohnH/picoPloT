@@ -16,11 +16,11 @@
 
 // --- E-PAPER -----------------------------------------------------------------
 
-constexpr unsigned WIDTH  = hw::EPaper::getWidth();
-constexpr unsigned HEIGHT = hw::EPaper::getHeight();
+constexpr unsigned WIDTH  = hw::Display::getWidth();
+constexpr unsigned HEIGHT = hw::Display::getHeight();
 
-hw::EPaper                epaper;
-static hw::EPaper::Canvas canvas;
+hw::Display                display;
+static hw::Display::Canvas canvas;
 
 
 // --- SENSRO ------------------------------------------------------------------
