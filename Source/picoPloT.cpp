@@ -19,7 +19,8 @@
 constexpr unsigned WIDTH  = hw::EPaper::getWidth();
 constexpr unsigned HEIGHT = hw::EPaper::getHeight();
 
-static hw::EPaper::Canvas epaper;
+hw::EPaper                epaper;
+static hw::EPaper::Canvas canvas;
 
 
 // --- SENSRO ------------------------------------------------------------------
@@ -42,6 +43,13 @@ extern "C" void IRQ_USBCTRL() { usb.irq(); }
 static hw::Rtc rtc;
 
 extern "C" void IRQ_RTC() { rtc.irq(); }
+
+
+// --- BUTTONS -----------------------------------------------------------------
+
+static hw::Buttons buttons{/* enable IRQ */ true};
+
+extern "C" void IRQ_IO_BANK0() { buttons.irq(); }
 
 
 // --- POWER -------------------------------------------------------------------
@@ -90,7 +98,7 @@ int main()
    rtc.setTime(8, 25, 0, 1);
    rtc.start();
 
-   Display<WIDTH,HEIGHT> display(epaper);
+   Display<WIDTH,HEIGHT> display(canvas);
 
    while(true)
    {
